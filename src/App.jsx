@@ -3,7 +3,7 @@ import { Loader2 } from 'lucide-react';
 import MediaCard from './components/MediaCard';
 import MediaDetail from './components/MediaDetail';
 import UploadButton from './components/UploadButton';
-import { fetchMedia } from './services/googleDrive';
+import { fetchMedia, deleteMedia } from './services/googleDrive';
 import './index.css';
 
 function App() {
@@ -27,19 +27,27 @@ function App() {
 
   const handleNextPage = () => {
     if (!nextPageToken) return;
-    setHistoryTokens([...historyTokens, ""]); // push current state dummy, real tracking depends on exact API logic
-    // Actually, drive v3 API requires token exactly, we must store the current token before navigating next
-    // to map: history[currentPage] = token_used_to_fetch_THIS_page
-    // This simple approach keeps an array of executed tokens
+    setHistoryTokens([...historyTokens, ""]);
     loadFiles(nextPageToken);
   };
 
-  // Simplistic handle previous by reloading from blank if we only track 1 depth or full reset.
-  // Real implementation for backwards needs tracking tokens per page integer.
   const handleRefresh = () => {
     setNextPageToken(null);
     setHistoryTokens([]);
     loadFiles("");
+  };
+
+  const handleDeleteMedia = async (file) => {
+    setSelectedMedia(null); // Đóng modal ngay lập tức
+    // Cập nhật giao diện xóa file ngay để tăng tốc độ UX (Optimistic Update)
+    setMediaList((prev) => prev.filter(f => f.id !== file.id));
+    
+    // Gọi API xóa ẩn danh qua Webhook
+    try {
+      await deleteMedia(file.id);
+    } catch (e) {
+      console.error("Failed to delete", e);
+    }
   };
 
   return (
@@ -92,6 +100,7 @@ function App() {
         <MediaDetail 
           file={selectedMedia} 
           onClose={() => setSelectedMedia(null)} 
+          onDelete={handleDeleteMedia}
         />
       )}
     </div>

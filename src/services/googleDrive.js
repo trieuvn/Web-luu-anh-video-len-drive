@@ -77,6 +77,33 @@ export async function uploadMedia(file) {
   });
 }
 
+// Xóa file thông qua Webhook
+export async function deleteMedia(fileId) {
+  const SCRIPT_URL = import.meta.env.VITE_GOOGLE_APPS_SCRIPT_URL;
+  if (!SCRIPT_URL) return false;
+
+  try {
+    const payload = {
+      action: "delete",
+      fileId: fileId
+    };
+
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    return { status: 'success' };
+  } catch(error) {
+    console.error("delete error", error);
+    return false;
+  }
+}
+
 
 // Fallback mock data to showcase the stunning UI if API Key is not configured yet
 function mockFetchMedia(pageToken) {

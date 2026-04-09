@@ -24,7 +24,15 @@ function doPost(e) {
   
   try {
     var data = JSON.parse(e.postData.contents);
-    // Đây là ID folder bạn đã đưa
+
+    // Chức năng xóa
+    if (data.action === "delete" && data.fileId) {
+      DriveApp.getFileById(data.fileId).setTrashed(true);
+      return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    // Xử lý upload mặc định
     var folderId = "1SSdtvJDAyYzYECGw9qj2eiprM7zVPL07";
     var folder = DriveApp.getFolderById(folderId);
     
